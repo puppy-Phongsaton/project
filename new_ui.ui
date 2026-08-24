@@ -1,0 +1,854 @@
+<?xml version="1.0" ?>
+<ui version="4.0">
+  <class>MainWindow</class>
+  <widget class="QMainWindow" name="MainWindow">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1024</width>
+        <height>600</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Driver Telematics Dashboard</string>
+    </property>
+    <property name="styleSheet">
+      <string>QMainWindow { background-color: #121824; }
+QFrame { background-color: #1e293b; border-radius: 12px; border: none; }
+QLabel { color: #e2e8f0; font-family: 'Segoe UI', 'Kanit'; }
+QFrame[frameShape="4"] { background-color: #334155; max-height: 2px; }</string>
+    </property>
+    <widget class="QWidget" name="centralwidget">
+      <widget class="QFrame" name="frame">
+        <property name="geometry">
+          <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>251</width>
+            <height>540</height>
+          </rect>
+        </property>
+        <widget class="QLabel" name="label_18">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>15</y>
+              <width>60</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Date :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 13pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Date">
+          <property name="geometry">
+            <rect>
+              <x>75</x>
+              <y>12</y>
+              <width>160</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00/00/0000</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 16pt; font-weight: bold; color: #38bdf8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_26">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>45</y>
+              <width>60</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Time :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 13pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Time">
+          <property name="geometry">
+            <rect>
+              <x>75</x>
+              <y>42</y>
+              <width>160</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 16pt; font-weight: bold; color: #38bdf8;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="frame_7">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>85</y>
+              <width>231</width>
+              <height>75</height>
+            </rect>
+          </property>
+          <property name="styleSheet">
+            <string>background-color: #0f172a; border: 1px solid #334155;</string>
+          </property>
+          <widget class="QLabel" name="label_4">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>8</y>
+                <width>211</width>
+                <height>20</height>
+              </rect>
+            </property>
+            <property name="text">
+              <string>SERVER STATUS</string>
+            </property>
+            <property name="styleSheet">
+              <string>font-size: 10pt; color: #64748b; font-weight: bold;</string>
+            </property>
+          </widget>
+          <widget class="QLabel" name="Server_Status">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>32</y>
+                <width>211</width>
+                <height>35</height>
+              </rect>
+            </property>
+            <property name="text">
+              <string>connected</string>
+            </property>
+            <property name="styleSheet">
+              <string>font-size: 18pt; font-weight: bold; color: #4ade80;</string>
+            </property>
+          </widget>
+        </widget>
+        <widget class="QLabel" name="label">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>175</y>
+              <width>220</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ข้อมูลพนักงานขับรถ</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 13pt; font-weight: bold; color: #f1f5f9;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_11">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>205</y>
+              <width>220</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Name</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; color: #64748b;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Driver_Name">
+          <property name="geometry">
+            <rect>
+              <x>25</x>
+              <y>225</y>
+              <width>210</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>mr. michel dean</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: 600;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="line_4">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>265</y>
+              <width>231</width>
+              <height>2</height>
+            </rect>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_19">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>280</y>
+              <width>220</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Driver ID</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; color: #64748b;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Driver_ID">
+          <property name="geometry">
+            <rect>
+              <x>25</x>
+              <y>300</y>
+              <width>210</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>123456789</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: 600;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="line_5">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>340</y>
+              <width>231</width>
+              <height>2</height>
+            </rect>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_25">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>355</y>
+              <width>220</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Vehicle ID</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; color: #64748b;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Vehicle_ID">
+          <property name="geometry">
+            <rect>
+              <x>25</x>
+              <y>375</y>
+              <width>210</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>123456789</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: 600;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="line_6">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>520</y>
+              <width>231</width>
+              <height>2</height>
+            </rect>
+          </property>
+        </widget>
+      </widget>
+      <widget class="QFrame" name="frame_3">
+        <property name="geometry">
+          <rect>
+            <x>275</x>
+            <y>10</y>
+            <width>411</width>
+            <height>161</height>
+          </rect>
+        </property>
+        <property name="styleSheet">
+          <string>background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #1e293b, stop:1 #0f172a); border: 1px solid #334155;</string>
+        </property>
+        <widget class="QLabel" name="label_8">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>15</y>
+              <width>391</width>
+              <height>35</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Speed (km/h)</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 16pt; font-weight: bold; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Speed">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>55</y>
+              <width>391</width>
+              <height>91</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>   xx</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 55pt; font-weight: bold; color: #f59e0b;</string>
+          </property>
+        </widget>
+      </widget>
+      <widget class="QFrame" name="frame_2">
+        <property name="geometry">
+          <rect>
+            <x>275</x>
+            <y>185</y>
+            <width>411</width>
+            <height>231</height>
+          </rect>
+        </property>
+        <widget class="QLabel" name="Main_status">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>15</y>
+              <width>391</width>
+              <height>41</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>xxx</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 22pt; font-weight: bold; color: #38bdf8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Val_1">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>65</y>
+              <width>391</width>
+              <height>81</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 45pt; font-weight: bold;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Sub_status">
+          <property name="geometry">
+            <rect>
+              <x>40</x>
+              <y>175</y>
+              <width>160</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>xxx</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 13pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Val_2">
+          <property name="geometry">
+            <rect>
+              <x>210</x>
+              <y>175</y>
+              <width>160</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: 600; color: #cbd5e1;</string>
+          </property>
+        </widget>
+      </widget>
+      <widget class="QFrame" name="frame_5">
+        <property name="geometry">
+          <rect>
+            <x>275</x>
+            <y>430</y>
+            <width>411</width>
+            <height>120</height>
+          </rect>
+        </property>
+        <widget class="QLabel" name="label_2">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>12</y>
+              <width>181</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ตำแหน่ง GPS</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 12pt; font-weight: bold;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="GPS_Status">
+          <property name="geometry">
+            <rect>
+              <x>220</x>
+              <y>12</y>
+              <width>175</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>สถานะ GPS</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 11pt; font-weight: bold; color: #4ade80;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_7">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>50</y>
+              <width>90</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Latitude</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 11pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Latitude">
+          <property name="geometry">
+            <rect>
+              <x>110</x>
+              <y>50</y>
+              <width>280</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ตำแหน่ง Lat</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 13pt; font-weight: 600;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_6">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>80</y>
+              <width>90</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>longitude</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 11pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Longtitude">
+          <property name="geometry">
+            <rect>
+              <x>110</x>
+              <y>80</y>
+              <width>280</width>
+              <height>25</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ตำแหน่ง Lat</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 13pt; font-weight: 600;</string>
+          </property>
+        </widget>
+      </widget>
+      <widget class="QFrame" name="frame_4">
+        <property name="geometry">
+          <rect>
+            <x>700</x>
+            <y>10</y>
+            <width>311</width>
+            <height>540</height>
+          </rect>
+        </property>
+        <widget class="QFrame" name="Status_frame">
+          <property name="geometry">
+            <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>291</width>
+              <height>140</height>
+            </rect>
+          </property>
+          <property name="styleSheet">
+            <string>background-color: #0f172a; border: 1px solid #334155;</string>
+          </property>
+          <widget class="QLabel" name="label_30">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>15</y>
+                <width>271</width>
+                <height>31</height>
+              </rect>
+            </property>
+            <property name="text">
+              <string>Driving Status</string>
+            </property>
+            <property name="styleSheet">
+              <string>font-size: 13pt; color: #64748b; font-weight: bold;</string>
+            </property>
+          </widget>
+          <widget class="QLabel" name="Driving_Status">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>55</y>
+                <width>271</width>
+                <height>61</height>
+              </rect>
+            </property>
+            <property name="text">
+              <string>Driving</string>
+            </property>
+            <property name="styleSheet">
+              <string>font-size: 26pt; font-weight: bold; color: #ef4444;</string>
+            </property>
+          </widget>
+        </widget>
+        <widget class="QLabel" name="label_13">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>165</y>
+              <width>80</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ROUND 1</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; font-weight: bold; color: #38bdf8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_16">
+          <property name="geometry">
+            <rect>
+              <x>140</x>
+              <y>165</y>
+              <width>150</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>สถานะการทำงาน</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Driv_R1">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>185</y>
+              <width>120</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Driving time :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 12pt; color: #cbd5e1;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Drive_R1_Val">
+          <property name="geometry">
+            <rect>
+              <x>140</x>
+              <y>185</y>
+              <width>150</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: bold;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="line_2">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>225</y>
+              <width>281</width>
+              <height>2</height>
+            </rect>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_14">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>235</y>
+              <width>80</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ROUND 2</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; font-weight: bold; color: #38bdf8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_17">
+          <property name="geometry">
+            <rect>
+              <x>140</x>
+              <y>235</y>
+              <width>150</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>สถานะการทำงาน</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Drive_R2">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>255</y>
+              <width>120</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Driving time :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 12pt; color: #cbd5e1;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Drive_R2_val">
+          <property name="geometry">
+            <rect>
+              <x>140</x>
+              <y>255</y>
+              <width>150</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: bold;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="line">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>295</y>
+              <width>281</width>
+              <height>2</height>
+            </rect>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_15">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>305</y>
+              <width>80</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>ROUND 3</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; font-weight: bold; color: #38bdf8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_20">
+          <property name="geometry">
+            <rect>
+              <x>140</x>
+              <y>305</y>
+              <width>150</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>สถานะการทำงาน</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 10pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Drive_R3">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>325</y>
+              <width>120</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Driving time :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 12pt; color: #cbd5e1;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Drive_R3_Val">
+          <property name="geometry">
+            <rect>
+              <x>140</x>
+              <y>325</y>
+              <width>150</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 15pt; font-weight: bold;</string>
+          </property>
+        </widget>
+        <widget class="QFrame" name="line_3">
+          <property name="geometry">
+            <rect>
+              <x>15</x>
+              <y>365</y>
+              <width>281</width>
+              <height>2</height>
+            </rect>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_21">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>385</y>
+              <width>140</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Driving time total :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 12pt; font-weight: 500; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Drive_total">
+          <property name="geometry">
+            <rect>
+              <x>160</x>
+              <y>385</y>
+              <width>131</width>
+              <height>31</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 16pt; font-weight: bold; color: #22c55e;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="label_23">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>425</y>
+              <width>271</width>
+              <height>20</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>Rest time before next day :</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 11pt; color: #94a3b8;</string>
+          </property>
+        </widget>
+        <widget class="QLabel" name="Rest_Next">
+          <property name="geometry">
+            <rect>
+              <x>20</x>
+              <y>450</y>
+              <width>271</width>
+              <height>41</height>
+            </rect>
+          </property>
+          <property name="text">
+            <string>00:00:00</string>
+          </property>
+          <property name="styleSheet">
+            <string>font-size: 22pt; font-weight: bold; color: #a855f7;</string>
+          </property>
+        </widget>
+      </widget>
+    </widget>
+    <widget class="QMenuBar" name="menubar"/>
+    <widget class="QStatusBar" name="statusbar"/>
+  </widget>
+</ui>
