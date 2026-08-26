@@ -1,17 +1,17 @@
 {
-  "elapsed_time": 25.01046895980835,
+  "elapsed_time": 0.0,
   "stop_duration": 0.0,
-  "new_day_waited": 0.0,
+  "new_day_waited": 720,
   "round_times": [
-    0.0,
+    25.01046895980835,
     0.0,
     0.0
   ],
-  "current_round": 0,
-  "end_of_day": false,
+  "current_round": 1,
+  "end_of_day": true,
   "max_logged": false,
   "_round_committed": false,
-  "drive_start": "2026-08-26T12:40:39.645889",
+  "drive_start": null,
   "rest_start": null,
-  "saved_at": "2026-08-26T12:41:03.656107"
+  "saved_at": "2026-08-26T13:01:46.952619"
 }
