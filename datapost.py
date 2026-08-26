@@ -5,12 +5,13 @@ datapost.py
 """
 
 import os
-
+from dotenv import load_dotenv
 from influxdb_client import InfluxDBClient, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
 from datetime import datetime
 
 # ═══════════════════ CONFIG ═══════════════════════════════════
+load_dotenv()
 INFLUX_BUCKET = "project_truck_tracking_system"
 INFLUX_URL    = os.getenv("INFLUX_URL")
 INFLUX_TOKEN  = os.getenv("INFLUX_TOKEN")
