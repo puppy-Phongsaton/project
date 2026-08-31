@@ -296,7 +296,7 @@ class Ui_MainWindow(object):
         self.label_21.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-size: 12pt; font-weight: 500; color: #94a3b8;", None))
         self.Drive_total.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
         self.Drive_total.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-size: 16pt; font-weight: bold; color: #22c55e;", None))
-        self.label_23.setText(QCoreApplication.translate("MainWindow", u"Rest time before next day :", None))
+        self.label_23.setText(QCoreApplication.translate("MainWindow", u"Camera :", None))
         self.label_23.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-size: 11pt; color: #94a3b8;", None))
         self.Rest_Next.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
         self.Rest_Next.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-size: 22pt; font-weight: bold; color: #a855f7;", None))

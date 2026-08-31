@@ -1,3 +1,4 @@
 .env
 venv
-driver_state
+driver_state.txt
+yolov8n.pt

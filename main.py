@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-tteett
+# -*- coding: utf-8 -*-
 import sys
 import time
 import uuid
@@ -11,6 +11,7 @@ from new_ui import Ui_MainWindow
 from driver_logic   import DriverLogic, MIN_SPEED, REST_TIME, save_state, load_state, STATE_FILE
 from datapost       import post_realtime, post_trigger, close as db_close
 from Login_ui       import LoginWindow
+from face_monitor   import FaceMonitor
 from gps_worker     import GpsWorker
 
 GPS_PORT = "/dev/ttyAMA0"
@@ -64,6 +65,14 @@ class DriverApp(QMainWindow):
         self.ui.Driver_Name.setText(f"{firstname} {lastname}")
         self.ui.Driver_ID.setText(driver_id)
 
+        # ── Face Monitor ── สร้างก่อน start_monitoring
+        self.face_monitor = FaceMonitor(camera_index=0)
+        self.face_monitor.alert.connect(self._on_face_alert)
+        self.face_monitor.face_detected.connect(self._on_face_detected)
+        self.face_monitor.face_lost.connect(self._on_face_lost)
+        self.face_monitor.start()
+        self.face_monitor.start_monitoring()
+
         self._gps_fixed   = False
         self._last_gps_t  = time.time()
         self._last_tick_t = time.time()
@@ -92,6 +101,11 @@ class DriverApp(QMainWindow):
 
         self._set_no_gps()
         self._update_clock()
+        self.ui.label_23.setText("Camera :")
+        self.ui.Rest_Next.setText("--")
+        self.ui.Rest_Next.setStyleSheet("color: gray; font: 16pt 'Segoe UI';")
+
+
 
     # ─── center widgets after render ─────────────────────────
     def _center_widgets(self):
@@ -201,16 +215,19 @@ class DriverApp(QMainWindow):
         ui.Longtitude.setText(f"{lon:.5f}")
 
         # ── Main_status / Main_Val (Val_1) เปลี่ยนตาม speed ──
-        if lg.speed < MIN_SPEED:
+        if lg.end_of_day:
+            ui.Main_status.setText("Wait New Day")
+            ui.Val_1.setText(_fmt(lg.rest_remaining))
+            ui.Sub_status.setText("Rested")
+            ui.Val_2.setText(_fmt(lg.new_day_waited))
+        elif lg.speed < MIN_SPEED:
             ui.Main_status.setText("Rest Time")
             ui.Val_1.setText(_fmt(lg.stop_duration))
-
             ui.Sub_status.setText("Driving")
             ui.Val_2.setText(_fmt(lg.elapsed_time))
         else:
             ui.Main_status.setText("Driving Time")
             ui.Val_1.setText(_fmt(lg.elapsed_time))
-
             ui.Sub_status.setText("Rest")
             ui.Val_2.setText(_fmt(lg.stop_duration))
 
@@ -219,13 +236,7 @@ class DriverApp(QMainWindow):
         ui.Drive_R3_Val.setText(_fmt(lg.round_times[2]))
         ui.Drive_total.setText(_fmt(lg.drive_total))
 
-        # Rest_Next แสดงเวลาที่เหลือก่อนเริ่มวันใหม่
-        if lg.end_of_day:
-            remaining = lg.rest_remaining
-            ui.Rest_Next.setText(_fmt(remaining))
-            ui.Val_2.setText(_fmt(lg.new_day_waited))
-        else:
-            ui.Rest_Next.setText("--:--:--")
+        # Rest_Next ใช้แสดง Camera status แล้ว ไม่ต้อง set ที่นี่
 
         self._apply_status(lg.status)
 
@@ -243,6 +254,21 @@ class DriverApp(QMainWindow):
         ui.frame_2.setStyleSheet(f"QFrame#frame_2 {{ {frame_style} }}")
         ui.Status_frame.setStyleSheet(f"QFrame#Status_frame {{ {frame_style} }}")
 
+    # ─── Face status ─────────────────────────────────────────
+    def _on_face_detected(self):
+        self.ui.label_23.setText("Camera :")
+        self.ui.Rest_Next.setText("True")
+        self.ui.Rest_Next.setStyleSheet("color: #00FF7F; font: 16pt 'Segoe UI';")
+
+    def _on_face_lost(self):
+        self.ui.label_23.setText("Camera :")
+        self.ui.Rest_Next.setText("False")
+        self.ui.Rest_Next.setStyleSheet("color: #FF3333; font: 16pt 'Segoe UI';")
+
+    def _on_face_alert(self, msg: str):
+        from PySide6.QtWidgets import QMessageBox
+        QMessageBox.warning(self, "แจ้งเตือน", msg)
+
     # ─── DB send ─────────────────────────────────────────────
     def _send_realtime(self):
         if not self._gps_fixed:
@@ -258,6 +284,7 @@ class DriverApp(QMainWindow):
     def closeEvent(self, event):
         db_close()
         self.worker.stop()
+        self.face_monitor.stop()
         super().closeEvent(event)
 
 
@@ -276,4 +303,4 @@ if __name__ == "__main__":
     login.login_success.connect(on_login)
     login.show()
 
-    sys.exit(app.exec()) 
+    sys.exit(app.exec())
