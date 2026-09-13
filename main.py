@@ -34,6 +34,19 @@ _STATUS_TEXT = {
 
 GPS_CHECK_INTERVAL  = 5
 
+# ── Text-to-Speech ──────────────────────────────────────────
+import threading
+import pyttsx3
+
+def _speak(text: str):
+    """พูดข้อความใน thread แยก ไม่บล็อก UI"""
+    def _run():
+        engine = pyttsx3.init()
+        engine.setProperty("rate", 150)   # ความเร็วพูด
+        engine.say(text)
+        engine.runAndWait()
+    threading.Thread(target=_run, daemon=True).start()
+
 # status code สำหรับส่ง DB
 _STATUS_CODE = {
     "REST":         0,
@@ -245,9 +258,18 @@ class DriverApp(QMainWindow):
         col, tint = _C[status]
         txt       = _STATUS_TEXT[status]
 
+        # ── แจ้งเตือนเสียงเมื่อเข้าสถานะ WARN ──
+        if status == "WARN" and getattr(self, "_last_status", None) != "WARN":
+            _speak("ใกล้ครบกำหนดพัก")
+        elif status == "OVER" and getattr(self, "_last_status", None) != "OVER":
+            _speak("เกินกำหนดเวลาพักแล้ว กรุณาหยุดพัก")
+        self._last_status = status
+
         ui.Driving_Status.setText(txt)
         ui.Driving_Status.setStyleSheet(f"color: {col}; font: 24pt 'Segoe UI';")
         self._center_status()
+        # ส่งสถานะให้ face_monitor รู้ว่ากำลังขับหรือพักอยู่
+        self.face_monitor.set_driving_status(status)
 
         frame_style = (f"background-color: {tint}; "
                        f"border: 1px solid {col}; border-radius: 4px;")
@@ -259,6 +281,10 @@ class DriverApp(QMainWindow):
         self.ui.label_23.setText("Camera :")
         self.ui.Rest_Next.setText("True")
         self.ui.Rest_Next.setStyleSheet("color: #00FF7F; font: 16pt 'Segoe UI';")
+        # ปิด alert dialog ถ้าเปิดอยู่
+        if getattr(self, "_face_alert_dialog", None):
+            self._face_alert_dialog.accept()
+            self._face_alert_dialog = None
 
     def _on_face_lost(self):
         self.ui.label_23.setText("Camera :")
@@ -267,7 +293,16 @@ class DriverApp(QMainWindow):
 
     def _on_face_alert(self, msg: str):
         from PySide6.QtWidgets import QMessageBox
-        QMessageBox.warning(self, "แจ้งเตือน", msg)
+        # ถ้ามี dialog เปิดอยู่แล้วไม่ต้องเปิดซ้ำ
+        if getattr(self, "_face_alert_dialog", None):
+            return
+        self._face_alert_dialog = QMessageBox(self)
+        self._face_alert_dialog.setWindowTitle("แจ้งเตือน")
+        self._face_alert_dialog.setText(msg)
+        self._face_alert_dialog.setIcon(QMessageBox.Icon.Warning)
+        self._face_alert_dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
+        self._face_alert_dialog.exec()
+        self._face_alert_dialog = None
 
     # ─── DB send ─────────────────────────────────────────────
     def _send_realtime(self):
