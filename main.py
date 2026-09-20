@@ -2,17 +2,23 @@
 import sys
 import time
 import uuid
+import threading
 from datetime import datetime
 
 from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtCore    import QTimer, Qt
+from PySide6.QtCore import QTimer, Qt
 
-from new_ui import Ui_MainWindow
-from driver_logic   import DriverLogic, MIN_SPEED, REST_TIME, save_state, load_state, STATE_FILE
-from datapost       import post_realtime, post_trigger, close as db_close
-from Login_ui       import LoginWindow
-from face_monitor   import FaceMonitor
-from gps_worker     import GpsWorker
+import pyttsx3
+
+from new_ui_new import Ui_MainWindow
+from driver_logic import (
+    DriverLogic, MIN_SPEED, REST_TIME,
+    save_state, load_state, STATE_FILE
+)
+from datapost import post_realtime, post_trigger, close as db_close
+from Login_ui import LoginWindow
+from face_monitor import FaceMonitor
+from gps_worker import GpsWorker
 
 GPS_PORT = "/dev/ttyAMA0"
 GPS_BAUD = 9600
@@ -24,6 +30,7 @@ _C = {
     "REST":         ("#00BFFF", "rgba(0,191,255,20)"),
     "WAIT_NEW_DAY": ("#FF8C00", "rgba(255,140,0,20)"),
 }
+
 _STATUS_TEXT = {
     "DRIVING":      "DRIVING",
     "WARN":         "Warning",
@@ -32,22 +39,6 @@ _STATUS_TEXT = {
     "WAIT_NEW_DAY": "WAIT NEW DAY",
 }
 
-GPS_CHECK_INTERVAL  = 5
-
-# ── Text-to-Speech ──────────────────────────────────────────
-import threading
-import pyttsx3
-
-def _speak(text: str):
-    """พูดข้อความใน thread แยก ไม่บล็อก UI"""
-    def _run():
-        engine = pyttsx3.init()
-        engine.setProperty("rate", 150)   # ความเร็วพูด
-        engine.say(text)
-        engine.runAndWait()
-    threading.Thread(target=_run, daemon=True).start()
-
-# status code สำหรับส่ง DB
 _STATUS_CODE = {
     "REST":         0,
     "DRIVING":      1,
@@ -55,9 +46,26 @@ _STATUS_CODE = {
     "OVER":         3,
     "WAIT_NEW_DAY": 4,
 }
-DB_SEND_INTERVAL    = 5
-DRIVER_ID           = "123456789"
-TRUCK_ID            = ':'.join(f'{(uuid.getnode() >> i) & 0xff:02x}' for i in range(40, -1, -8))
+
+GPS_CHECK_INTERVAL = 5
+DB_SEND_INTERVAL = 5
+DRIVER_ID = "123456789"
+TRUCK_ID = ':'.join(
+    f'{(uuid.getnode() >> i) & 0xff:02x}'
+    for i in range(40, -1, -8)
+)
+DOUBLE_TAP_INTERVAL = 1.0   # แตะ 2 ครั้งในช่วงนี้ = toggle fullscreen
+
+
+def _speak(text: str):
+    """พูดข้อความใน thread แยก ไม่บล็อก UI"""
+    def _run():
+        engine = pyttsx3.init()
+        engine.setProperty("rate", 150)
+        engine.say(text)
+        engine.runAndWait()
+
+    threading.Thread(target=_run, daemon=True).start()
 
 
 def _fmt(seconds: float) -> str:
@@ -68,28 +76,40 @@ def _fmt(seconds: float) -> str:
 
 
 class DriverApp(QMainWindow):
-    def __init__(self, driver_id: str = "123456789", firstname: str = "", lastname: str = ""):
+    def __init__(
+        self,
+        driver_id: str = "123456789",
+        firstname: str = "",
+        lastname: str = ""
+    ):
         super().__init__()
-        self.ui    = Ui_MainWindow()
+        self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.logic      = DriverLogic()
+
+        self.logic = DriverLogic()
         self.driver_id = driver_id
         load_state(self.logic)
+
         self.ui.Driver_Name.setText(f"{firstname} {lastname}")
         self.ui.Driver_ID.setText(driver_id)
 
-        # ── Face Monitor ── สร้างก่อน start_monitoring
+        self._last_tap_time = 0.0
+        self._face_alert_dialog = None
+
+        # ── Face monitor: ตรวจเฉพาะตอน DRIVING ทุก 5 นาที ──
         self.face_monitor = FaceMonitor(camera_index=0)
-        self.face_monitor.alert.connect(self._on_face_alert)
         self.face_monitor.face_detected.connect(self._on_face_detected)
         self.face_monitor.face_lost.connect(self._on_face_lost)
+        self.face_monitor.alert.connect(self._on_face_alert)
+        self.face_monitor.set_driving_status(self.logic.status)
         self.face_monitor.start()
         self.face_monitor.start_monitoring()
 
-        self._gps_fixed   = False
-        self._last_gps_t  = time.time()
+        # ── GPS ─────────────────────────────────────────────
+        self._gps_fixed = False
+        self._last_gps_t = time.time()
         self._last_tick_t = time.time()
-        self._last_pos    = (0.0, 0.0, 0.0, 'DRIVING')  # lat, lon, speed, status
+        self._last_pos = (0.0, 0.0, 0.0, 'DRIVING')
 
         self.worker = GpsWorker(port=GPS_PORT, baud=GPS_BAUD)
         self.worker.data_ready.connect(self._on_gps_data)
@@ -107,24 +127,27 @@ class DriverApp(QMainWindow):
         self._db_timer.timeout.connect(self._send_realtime)
         self._db_timer.start()
 
+        # ── Clock ───────────────────────────────────────────
         self._clock = QTimer()
         self._clock.setInterval(1000)
         self._clock.timeout.connect(self._update_clock)
         self._clock.start()
 
+        # ── Initial UI ──────────────────────────────────────
         self._set_no_gps()
         self._update_clock()
+
         self.ui.label_23.setText("Camera :")
         self.ui.Rest_Next.setText("--")
-        self.ui.Rest_Next.setStyleSheet("color: gray; font: 16pt 'Segoe UI';")
+        self.ui.Rest_Next.setStyleSheet(
+            "color: gray; font: 16pt 'Segoe UI';"
+        )
 
-
-
-    # ─── center widgets after render ─────────────────────────
+    # ── Layout helper ───────────────────────────────────────
     def _center_widgets(self):
         for widget, frame in [
-            (self.ui.Val_1,          self.ui.frame_2),
-            (self.ui.Speed,          self.ui.frame_3),
+            (self.ui.Val_1, self.ui.frame_2),
+            (self.ui.Speed, self.ui.frame_3),
             (self.ui.Driving_Status, self.ui.Status_frame),
         ]:
             widget.adjustSize()
@@ -138,38 +161,65 @@ class DriverApp(QMainWindow):
         new_x = (self.ui.Status_frame.width() - w.width()) // 2
         w.move(new_x, w.y())
 
-    # ─── keyboard (sim only) ─────────────────────────────────
+    # ── Input ───────────────────────────────────────────────
+    def mousePressEvent(self, event):
+        """แตะ/คลิกตรงไหนก็ได้ 2 ครั้งภายใน 1 วิ -> สลับ Fullscreen / Normal"""
+        now = time.time()
+        if now - self._last_tap_time <= DOUBLE_TAP_INTERVAL:
+            if self.isFullScreen():
+                self.showNormal()
+            else:
+                self.showFullScreen()
+            self._last_tap_time = 0.0
+            QTimer.singleShot(0, self._center_widgets)
+        else:
+            self._last_tap_time = now
+        super().mousePressEvent(event)
+
     def keyPressEvent(self, event):
         from GPS_Module import IS_RPI
         if not IS_RPI and event.key() == Qt.Key.Key_S:
             self.worker.force_stop = not self.worker.force_stop
             state = "STOP" if self.worker.force_stop else "DRIVE"
             print(f"[SIM] S → {state}")
+
         if not IS_RPI and event.key() == Qt.Key.Key_R:
             import os
             if os.path.exists(STATE_FILE):
                 os.remove(STATE_FILE)
             self.logic.__init__()
             print("[SIM] R → RESET")
+
         super().keyPressEvent(event)
 
-    # ─── GPS callbacks ───────────────────────────────────────
+    # ── GPS callbacks ───────────────────────────────────────
     def _on_gps_data(self, lat, lon, raw_speed, t_str, d_str):
-        now   = time.time()
+        now = time.time()
         delta = now - self._last_tick_t
         self._last_tick_t = now
-        self._last_gps_t  = now
+        self._last_gps_t = now
 
         speed = self.logic.smooth_speed(raw_speed)
         self.logic.tick(delta, speed)
         save_state(self.logic)
-        self._last_pos = (lat, lon, speed, _STATUS_CODE.get(self.logic.status, 0))
+
+        self._last_pos = (
+            lat,
+            lon,
+            speed,
+            _STATUS_CODE.get(self.logic.status, 0)
+        )
 
         if self.logic.pending_rest_payload:
             p = self.logic.pending_rest_payload
-            post_trigger(self.driver_id, TRUCK_ID,
-                         p["drive_duration"], p["rest_duration"],
-                         p["rest_start"], p["rest_end"])
+            post_trigger(
+                self.driver_id,
+                TRUCK_ID,
+                p["drive_duration"],
+                p["rest_duration"],
+                p["rest_start"],
+                p["rest_end"]
+            )
             self.logic.pending_rest_payload = None
 
         if not self._gps_fixed:
@@ -179,46 +229,44 @@ class DriverApp(QMainWindow):
         self._refresh_ui(lat, lon, speed)
 
     def _on_no_fix(self):
-        """เจอ GPS แต่ยังหาตำแหน่งไม่ได้"""
         self.logic.smooth_speed(0)
-        self._last_gps_t  = time.time()
-        self._gps_fixed   = False
+        self._last_gps_t = time.time()
+        self._gps_fixed = False
         self.ui.GPS_Status.setText("NO FIX")
-        self.ui.GPS_Status.setStyleSheet("color: #FFD700; font: 12pt 'Segoe UI';")
+        self.ui.GPS_Status.setStyleSheet(
+            "color: #FFD700; font: 12pt 'Segoe UI';"
+        )
         self.ui.Latitude.setText("None")
         self.ui.Longtitude.setText("None")
 
     def _on_no_gps(self):
-        """ไม่ได้รับข้อมูลจาก GPS เลย"""
-        # ไม่ reset _last_gps_t เพราะยังไม่เจออุปกรณ์
-        pass   # ให้ _check_fix_timeout จัดการแทน
+        pass
 
-    # ─── GPS status display ──────────────────────────────────
     def _set_no_gps(self):
-        """ไม่พบ GPS"""
         self._gps_fixed = False
         self.ui.GPS_Status.setText("NO GPS")
-        self.ui.GPS_Status.setStyleSheet("color: #FF3333; font: 12pt 'Segoe UI';")
+        self.ui.GPS_Status.setStyleSheet(
+            "color: #FF3333; font: 12pt 'Segoe UI';"
+        )
         self.ui.Latitude.setText("None")
         self.ui.Longtitude.setText("None")
 
     def _set_fixed(self):
-        """GPS fix สมบูรณ์"""
         self.ui.GPS_Status.setText("GPS FIXED")
-        self.ui.GPS_Status.setStyleSheet("color: #00FF7F; font: 12pt 'Segoe UI';")
+        self.ui.GPS_Status.setStyleSheet(
+            "color: #00FF7F; font: 12pt 'Segoe UI';"
+        )
 
     def _check_fix_timeout(self):
-        """ถ้าไม่ได้รับข้อมูลนานเกิน GPS_CHECK_INTERVAL → NO GPS"""
         if time.time() - self._last_gps_t > GPS_CHECK_INTERVAL:
             self._set_no_gps()
 
-    # ─── Clock ───────────────────────────────────────────────
+    # ── UI refresh ──────────────────────────────────────────
     def _update_clock(self):
         now = datetime.now()
         self.ui.Time.setText(now.strftime("%H:%M:%S"))
         self.ui.Date.setText(now.strftime("%d/%m/%Y"))
 
-    # ─── UI refresh ──────────────────────────────────────────
     def _refresh_ui(self, lat, lon, speed):
         ui = self.ui
         lg = self.logic
@@ -227,7 +275,6 @@ class DriverApp(QMainWindow):
         ui.Latitude.setText(f"{lat:.5f}")
         ui.Longtitude.setText(f"{lon:.5f}")
 
-        # ── Main_status / Main_Val (Val_1) เปลี่ยนตาม speed ──
         if lg.end_of_day:
             ui.Main_status.setText("Wait New Day")
             ui.Val_1.setText(_fmt(lg.rest_remaining))
@@ -249,73 +296,104 @@ class DriverApp(QMainWindow):
         ui.Drive_R3_Val.setText(_fmt(lg.round_times[2]))
         ui.Drive_total.setText(_fmt(lg.drive_total))
 
-        # Rest_Next ใช้แสดง Camera status แล้ว ไม่ต้อง set ที่นี่
-
         self._apply_status(lg.status)
 
     def _apply_status(self, status: str):
-        ui        = self.ui
+        ui = self.ui
         col, tint = _C[status]
-        txt       = _STATUS_TEXT[status]
+        txt = _STATUS_TEXT[status]
+        prev = getattr(self, "_last_status", None)
 
-        # ── แจ้งเตือนเสียงเมื่อเข้าสถานะ WARN ──
-        if status == "WARN" and getattr(self, "_last_status", None) != "WARN":
+        if status == "WARN" and prev != "WARN":
             _speak("ใกล้ครบกำหนดพัก")
-        elif status == "OVER" and getattr(self, "_last_status", None) != "OVER":
+        elif status == "OVER" and prev != "OVER":
             _speak("เกินกำหนดเวลาพักแล้ว กรุณาหยุดพัก")
+
         self._last_status = status
 
         ui.Driving_Status.setText(txt)
-        ui.Driving_Status.setStyleSheet(f"color: {col}; font: 24pt 'Segoe UI';")
+        ui.Driving_Status.setStyleSheet(
+            f"color: {col}; font: 24pt 'Segoe UI';"
+        )
         self._center_status()
-        # ส่งสถานะให้ face_monitor รู้ว่ากำลังขับหรือพักอยู่
+
+        # แจ้งสถานะให้ face monitor ทุกครั้ง (เริ่ม/หยุดตรวจตามสถานะ)
         self.face_monitor.set_driving_status(status)
 
-        frame_style = (f"background-color: {tint}; "
-                       f"border: 1px solid {col}; border-radius: 4px;")
-        ui.frame_2.setStyleSheet(f"QFrame#frame_2 {{ {frame_style} }}")
-        ui.Status_frame.setStyleSheet(f"QFrame#Status_frame {{ {frame_style} }}")
+        if status in FaceMonitor.ACTIVE_STATUS:
+            self.face_monitor.start_monitoring()
+        else:
+            self.face_monitor.stop_monitoring()
+            self._set_camera_idle()
 
-    # ─── Face status ─────────────────────────────────────────
+        frame_style = (
+            f"background-color: {tint}; "
+            f"border: 1px solid {col}; "
+            f"border-radius: 4px;"
+        )
+        ui.frame_2.setStyleSheet(f"QFrame#frame_2 {{ {frame_style} }}")
+        ui.Status_frame.setStyleSheet(
+            f"QFrame#Status_frame {{ {frame_style} }}"
+        )
+
+    # ── Face callbacks ──────────────────────────────────────
+    def _set_camera_idle(self):
+        """ไม่ได้อยู่ในสถานะขับ -> ไม่ตรวจกล้อง แสดง --"""
+        if self.ui.Rest_Next.text() == "--":
+            return
+        self.ui.Rest_Next.setText("--")
+        self.ui.Rest_Next.setStyleSheet(
+            "color: gray; font: 16pt 'Segoe UI';"
+        )
+
     def _on_face_detected(self):
         self.ui.label_23.setText("Camera :")
         self.ui.Rest_Next.setText("True")
-        self.ui.Rest_Next.setStyleSheet("color: #00FF7F; font: 16pt 'Segoe UI';")
-        # ปิด alert dialog ถ้าเปิดอยู่
-        if getattr(self, "_face_alert_dialog", None):
+        self.ui.Rest_Next.setStyleSheet(
+            "color: #00FF7F; font: 16pt 'Segoe UI';"
+        )
+        if self._face_alert_dialog:
             self._face_alert_dialog.accept()
             self._face_alert_dialog = None
 
     def _on_face_lost(self):
         self.ui.label_23.setText("Camera :")
         self.ui.Rest_Next.setText("False")
-        self.ui.Rest_Next.setStyleSheet("color: #FF3333; font: 16pt 'Segoe UI';")
+        self.ui.Rest_Next.setStyleSheet(
+            "color: #FF3333; font: 16pt 'Segoe UI';"
+        )
 
     def _on_face_alert(self, msg: str):
         from PySide6.QtWidgets import QMessageBox
-        # ถ้ามี dialog เปิดอยู่แล้วไม่ต้องเปิดซ้ำ
-        if getattr(self, "_face_alert_dialog", None):
+        if self._face_alert_dialog:
             return
         self._face_alert_dialog = QMessageBox(self)
         self._face_alert_dialog.setWindowTitle("แจ้งเตือน")
         self._face_alert_dialog.setText(msg)
         self._face_alert_dialog.setIcon(QMessageBox.Icon.Warning)
-        self._face_alert_dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
+        self._face_alert_dialog.setStandardButtons(
+            QMessageBox.StandardButton.Ok
+        )
         self._face_alert_dialog.exec()
         self._face_alert_dialog = None
 
-    # ─── DB send ─────────────────────────────────────────────
+    # ── DB ──────────────────────────────────────────────────
     def _send_realtime(self):
         if not self._gps_fixed:
             return
         lat, lon, speed, status = self._last_pos
         lg = self.logic
-        post_realtime(self.driver_id, TRUCK_ID,
-                      lat, lon,
-                      speed, status,
-                      lg.elapsed_time, lg.stop_duration)
+        post_realtime(
+            self.driver_id,
+            TRUCK_ID,
+            lat,
+            lon,
+            speed,
+            status,
+            lg.elapsed_time,
+            lg.stop_duration
+        )
 
-    # ─── cleanup ─────────────────────────────────────────────
     def closeEvent(self, event):
         db_close()
         self.worker.stop()
@@ -325,17 +403,15 @@ class DriverApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-
     _main_window = None
 
     def on_login(driver_id, firstname, lastname):
         global _main_window
         _main_window = DriverApp(driver_id, firstname, lastname)
-        _main_window.show()
+        _main_window.showFullScreen()
         QTimer.singleShot(0, _main_window._center_widgets)
 
     login = LoginWindow()
     login.login_success.connect(on_login)
     login.show()
-
     sys.exit(app.exec())
